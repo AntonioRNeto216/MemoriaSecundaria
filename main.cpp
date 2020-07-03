@@ -4,14 +4,11 @@
 
 using namespace std;
 
-union dado
-{
-    struct
-    {
+union dado {
+    struct {
         int quant, first, last, free;
     } cabecalho;
-    struct
-    {
+    struct {
         int chave, next, prev;
     } registro;
 };
@@ -81,67 +78,6 @@ void imprimirSeq(fstream &arq) {
     while(reg.registro.next!=-1);
 }
 
-
-void insere(fstream &arq, dado d) {
-    dado aux, cab;
-    int free;
-    //cout<<endl<<endl<<"Inserindo registros"<<endl;
-
-    /*posiciona o ponteiro de leitura no in�cio do arquivo*/
-    arq.seekg (0,arq.beg);
-
-    /*le o cabe�alho*/
-    arq.read((char*)&cab, sizeof(cab));
-
-    /*posiciona o ponteiro de leitura na primeira posi��o livre no arquivo*/
-    arq.seekg(sizeof(cab)*cab.cabecalho.free,arq.beg);
-
-    /*le as informa��es do registro livre*/
-    arq.read((char*)&aux, sizeof(aux));
-
-    /*grava em free o pr�ximo registro livre*/
-    free=aux.registro.next;
-
-    /*atribuindo as informa��es do novo registro*/
-    aux=d;
-    aux.registro.next=-1;
-    aux.registro.prev=cab.cabecalho.last;
-
-    /*atualizando o next do registro que vai apontar para o novo registro aux*/
-    if(aux.registro.prev!=-1)
-    {
-        dado bob;
-        /*posiciona o ponteiro de leitura para o registro que vai apontar para o novo registro aux*/
-        arq.seekg(sizeof(aux)*aux.registro.prev,arq.beg);
-        /*lendo o registro*/
-        arq.read((char*)&bob, sizeof(bob));
-        /*atualizando o next*/
-        bob.registro.next=cab.cabecalho.free;
-
-        /*posiciona o ponteiro de escrita para o registro que vai apontar para o novo registro aux*/
-        arq.seekp (sizeof(aux)*aux.registro.prev,arq.beg);
-        /*gravando o registro*/
-        arq.write((char*)&bob, sizeof(bob));
-    }
-    /*posiciona o ponteiro de leitura para a posi��o do novo registro aux*/
-    arq.seekp(sizeof(cab)*cab.cabecalho.free,arq.beg);
-    /*gravando o registro*/
-    arq.write((char*)&aux, sizeof(aux));
-
-    /*Atualiza��o o cabe�alho*/
-    if(cab.cabecalho.first==-1)
-        cab.cabecalho.first=cab.cabecalho.free;
-
-    cab.cabecalho.quant++;
-    cab.cabecalho.last=cab.cabecalho.free;
-    cab.cabecalho.free=free;
-
-    /*posiciona o ponteiro de escrita no in�cio do arquivo*/
-    arq.seekp (0,arq.beg);
-    /*gravado o cabe�alho*/
-    arq.write((char*)&cab, sizeof(cab));
-}
-
 void ImprimeLivres(fstream &arq) {
     dado cab;
     arq.seekg(0,arq.beg);
@@ -168,7 +104,33 @@ void ImprimeLivres(fstream &arq) {
     } while(cab.registro.next != -1);
 }
 
-void Pesquisa(fstream &arq, int j) { 
+void insere(fstream &arq, int j) { // ver passsar por referencia
+    dado cab, aux, aux2;
+    arq.seekg(0,arq.beg);
+    arq.read((char*)&cab, sizeof(cab));
+    if(cab.cabecalho.quant < 8) {
+        if(cab.cabecalho.quant == 0) {
+            arq.seekg(sizeof(aux)*cab.cabecalho.free,arq.beg);
+            arq.read((char*)&aux, sizeof(aux));
+            arq.seekp (sizeof(aux)*cab.cabecalho.free,arq.beg);
+            aux.registro.chave = j;
+            cab.cabecalho.first = cab.cabecalho.free;
+            cab.cabecalho.last = cab.cabecalho.first;
+            cab.cabecalho.free = aux.registro.next;
+            aux.registro.next = -1;
+            cab.cabecalho.quant++;
+            arq.write((char*)&aux, sizeof(aux));
+            arq.seekp (0,arq.beg);
+            arq.write((char*)&cab, sizeof(cab));
+        } else {
+            
+        }
+    } else {
+        cout << " Desculpe, espaco indisponivel" << endl;
+    }
+}
+
+void Pesquisa(fstream &arq, int j) { // ver passar por referencia
     dado cab;
     arq.seekg(0,arq.beg);
     arq.read((char*)&cab, sizeof(cab));
@@ -192,7 +154,7 @@ void Pesquisa(fstream &arq, int j) {
     }
 }
 
-int PesquisadoRemove(fstream &arq, int j) { 
+int PesquisadoRemove(fstream &arq, int j) { // ver passar por referencia
     dado cab;
     arq.seekg(0,arq.beg);
     arq.read((char*)&cab, sizeof(cab));
@@ -331,11 +293,9 @@ int main() {
     fstream arq;
     int j, escolha;
     arq.open("pagina.dat",ios::binary| fstream::in | fstream::out );
-    if(!arq.is_open())
-    {
+    if(!arq.is_open()) {
        arq.open("pagina.dat",ios::binary| fstream::in | fstream::out|fstream::trunc );
-       if(!arq.is_open())
-        {
+       if(!arq.is_open()) {
             cout<<"Erro ao abrir o arquivo!!";
             return 0;
         }
@@ -346,8 +306,8 @@ int main() {
         escolha = menu();
         if(escolha == 1) { // fazer ainda o que realmente precisa
             cout<<"Inserindo novo registro:\nDigite a chave: ";
-            cin>>d.registro.chave;
-            insere(arq,d);
+            cin>>j;
+            insere(arq,j);
         } else if(escolha == 2) {
             cout << "\n Insira a chave para excluir: ";
             cin >> j;
@@ -518,4 +478,5 @@ void Remocao(fstream &arq, int j) {
         cout << "Desculpe, o registro nao existe!" << endl;
     }
 }*/
+
 
