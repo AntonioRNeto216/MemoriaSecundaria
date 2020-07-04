@@ -125,9 +125,13 @@ void insere(fstream &arq, int j) { // ver passsar por referencia
         } else { // quando tem mais de 1
             arq.seekg(sizeof(aux)*cab.cabecalho.first,arq.beg);
             arq.read((char*)&aux, sizeof(aux));
+
+            arq.seekg(sizeof(aux2)*cab.cabecalho.free,arq.beg);
+            arq.read((char*)&aux2, sizeof(aux2));
+
             if(aux.registro.chave > j) { // inserindo no primeiro 
-                arq.seekg(sizeof(aux2)*cab.cabecalho.free,arq.beg);
-                arq.read((char*)&aux2, sizeof(aux2));
+                /*arq.seekg(sizeof(aux2)*cab.cabecalho.free,arq.beg);
+                arq.read((char*)&aux2, sizeof(aux2));*/ // ta ali antes do if
 
                 arq.seekp (sizeof(aux)*cab.cabecalho.first,arq.beg);
                 aux.registro.prev = cab.cabecalho.free;
@@ -144,15 +148,32 @@ void insere(fstream &arq, int j) { // ver passsar por referencia
                 cab.cabecalho.first = aux.registro.prev;
                 cab.cabecalho.quant++;
                 arq.write((char*)&cab, sizeof(cab));
-            }/* else {
+            } else {
                 arq.seekg(sizeof(aux)*cab.cabecalho.last,arq.beg);
                 arq.read((char*)&aux, sizeof(aux));
                 if(aux.registro.chave < j) { // inserindo no fim
 
-                } else { // ta no meio 
+                    arq.seekp (sizeof(aux)*cab.cabecalho.last,arq.beg);
+                    aux.registro.next = cab.cabecalho.free;
+                    arq.write((char*)&aux, sizeof(aux));
 
-                }
-            }*/
+                    cab.cabecalho.free = aux2.registro.next;
+
+                    arq.seekp (sizeof(aux2)*aux.registro.next,arq.beg);
+                    aux2.registro.chave = j;
+                    aux2.registro.next = -1;
+                    aux2.registro.prev = cab.cabecalho.last;
+                    arq.write((char*)&aux2, sizeof(aux2));
+
+                    cab.cabecalho.quant++;
+                    cab.cabecalho.last = aux.registro.next;
+                    arq.seekp (0,arq.beg);
+                    arq.write((char*)&cab, sizeof(cab));
+
+                } /*else { // ta no meio 
+
+                }*/
+            }
         }
     } else {
         cout << " Desculpe, espaco indisponivel" << endl;
