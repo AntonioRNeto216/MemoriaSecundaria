@@ -130,8 +130,6 @@ void insere(fstream &arq, int j) { // ver passsar por referencia
             arq.read((char*)&aux2, sizeof(aux2));
 
             if(aux.registro.chave > j) { // inserindo no primeiro 
-                /*arq.seekg(sizeof(aux2)*cab.cabecalho.free,arq.beg);
-                arq.read((char*)&aux2, sizeof(aux2));*/ // ta ali antes do if
 
                 arq.seekp (sizeof(aux)*cab.cabecalho.first,arq.beg);
                 aux.registro.prev = cab.cabecalho.free;
@@ -170,9 +168,33 @@ void insere(fstream &arq, int j) { // ver passsar por referencia
                     arq.seekp (0,arq.beg);
                     arq.write((char*)&cab, sizeof(cab));
 
-                } /*else { // ta no meio 
-
-                }*/
+                } else { // ta no meio 
+                    int comp, posicao;
+                    do {
+                        posicao = aux.registro.prev;
+                        comp = aux.registro.chave;
+                        arq.seekg(sizeof(aux)*aux.registro.prev,arq.beg);
+                        arq.read((char*)&aux, sizeof(aux));
+                    } while(comp > j && aux.registro.chave > j);
+                    comp = aux.registro.next;
+                    aux.registro.next = cab.cabecalho.free;
+                    arq.seekp (sizeof(aux)*posicao,arq.beg);
+                    arq.write((char*)&aux, sizeof(aux));
+                    arq.seekg(sizeof(aux)*comp,arq.beg);
+                    arq.read((char*)&aux, sizeof(aux));
+                    aux.registro.prev = cab.cabecalho.free;
+                    arq.seekp (sizeof(aux)*comp,arq.beg);
+                    arq.write((char*)&aux, sizeof(aux));
+                    cab.cabecalho.free = aux2.registro.next;
+                    aux2.registro.chave = j;
+                    aux2.registro.next = comp;
+                    aux2.registro.prev = posicao;
+                    arq.seekp (sizeof(aux2)*aux.registro.prev,arq.beg);
+                    arq.write((char*)&aux2, sizeof(aux2));
+                    cab.cabecalho.quant++;
+                    arq.seekp (0,arq.beg);
+                    arq.write((char*)&cab, sizeof(cab));
+                }
             }
         }
     } else {
@@ -204,7 +226,7 @@ void Pesquisa(fstream &arq, int j) { // ver passar por referencia
     }
 }
 
-int PesquisadoRemove(fstream &arq, int j) { // ver passar por referencia
+int PesquisadoRemoveEInsere(fstream &arq, int j) { // ver passar por referencia
     dado cab;
     arq.seekg(0,arq.beg);
     arq.read((char*)&cab, sizeof(cab));
@@ -229,7 +251,7 @@ int PesquisadoRemove(fstream &arq, int j) { // ver passar por referencia
 }
 
 void Remocao(fstream &arq, int j) { // FAZER QUANDO VAI EXCLUIR E TODOS OS REGISTROS ESTAO PREENCHIDOS 
-    int quant = PesquisadoRemove(arq, j); // retorna o numero de vezes q ele passou por um registo, porém quant != posicao
+    int quant = PesquisadoRemoveEInsere(arq, j); // retorna o numero de vezes q ele passou por um registo, porém quant != posicao
     if(quant != 0) { // se retornar 0 sei que o registro com a chave não existe, logo impossivel remover
         dado cab,aux, aux2;
         int posicao,pos; // posicao para aux e pos para aux2
