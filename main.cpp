@@ -12,8 +12,7 @@ union dado {
     } registro;
 };
 
-// OK
-void inicializar(fstream &arq) {
+void inicializar(fstream &arq, int &numreg) {
     dado d;
     arq.seekp (0,arq.beg);
     d.cabecalho.quant=0;
@@ -21,8 +20,8 @@ void inicializar(fstream &arq) {
     d.cabecalho.last=-1;
     d.cabecalho.free=1;
     arq.write((char*)&d, sizeof(d));
-    for (int i = 1; i <= 8; i++) {
-        if(i==8)
+    for (int i = 1; i <= numreg; i++) {
+        if(i==numreg)
             d.registro.next=-1;
         else
             d.registro.next=i+1;
@@ -31,8 +30,7 @@ void inicializar(fstream &arq) {
     }
 }
 
-// OK
-void imprimir(fstream &arq) {
+void imprimir(fstream &arq, int &numreg) {
     dado d;
     arq.seekg (0,arq.beg);
     arq.read((char*)&d, sizeof(d));
@@ -42,7 +40,7 @@ void imprimir(fstream &arq) {
     cout << " Last: " << d.cabecalho.last <<endl;
     cout << " Free: " << d.cabecalho.free <<endl;
     cout << " Registros" << endl;
-    for (int i = 1; i <= 8; i++) {
+    for (int i = 1; i <= numreg; i++) {
         arq.read((char*)&d, sizeof(d));
         cout << " " << i << "- Chave: " << d.registro.chave << endl;
         cout << " " << i << "- Next: " << d.registro.next << endl;
@@ -50,7 +48,6 @@ void imprimir(fstream &arq) {
     }
 }
 
-// OK
 void imprimirSeq(fstream &arq) {
     dado cab,reg;
     arq.seekg (0,arq.beg);
@@ -78,11 +75,11 @@ void imprimirSeq(fstream &arq) {
     while(reg.registro.next!=-1);
 }
 
-void ImprimeLivres(fstream &arq) {
+void ImprimeLivres(fstream &arq, int &numreg) {
     dado cab;
     arq.seekg(0,arq.beg);
     arq.read((char*)&cab, sizeof(cab));
-    if(cab.cabecalho.quant < 8) {
+    if(cab.cabecalho.quant < numreg) {
         arq.seekg(sizeof(cab)*cab.cabecalho.free,arq.beg);
         arq.read((char*)&cab, sizeof(cab));
         cout << "Registro(s) livres" << endl;
@@ -103,7 +100,6 @@ void ImprimeLivres(fstream &arq) {
     }
 }
 
-// OK
 bool PesquisadoInsere(fstream &arq, int &j) {
     dado cab, aux;
     arq.seekg(0,arq.beg);
@@ -130,7 +126,6 @@ bool PesquisadoInsere(fstream &arq, int &j) {
     }
 }
 
-//OK
 void insere(fstream &arq, int &j) { 
     dado cab, aux, aux2; 
     arq.seekg(0,arq.beg);
@@ -218,7 +213,6 @@ void insere(fstream &arq, int &j) {
     }
 }
 
-// OK
 void Pesquisa(fstream &arq, int &j) { 
     dado cab, aux;
     arq.seekg(0,arq.beg);
@@ -247,7 +241,6 @@ void Pesquisa(fstream &arq, int &j) {
     }
 }
 
-// OK
 int PesquisadoRemove(fstream &arq, int &j) { 
     dado cab;
     arq.seekg(0,arq.beg);
@@ -280,7 +273,6 @@ int PesquisadoRemove(fstream &arq, int &j) {
     return 0;
 }
 
-// OK
 void Remocao(fstream &arq, int &j) { 
     int quant = PesquisadoRemove(arq, j); // retorna o numero de vezes q ele passou por um registo, porém quant != posicao
     if(quant != 0) { // se retornar 0 sei que o registro com a chave não existe, logo impossivel remover
@@ -373,8 +365,17 @@ void Remocao(fstream &arq, int &j) {
         cout << " Desculpe, o registro nao existe!" << endl;
     }
 }
+
+void Tamanho(fstream &arq, int &numreg) {
+    streampos begin,end;
+    begin = arq.tellg();
+    arq.seekg (0, ios::end);
+    end = arq.tellg();
+    numreg = ((end-begin)/sizeof(dado))-1;
+}
+
 void leNomeArquivo(char nomeArquivo[]) {
-    cout << "Nome do arquivo: ";
+    cout << " Nome do arquivo: ";
     fflush(stdin);
     gets(nomeArquivo);
 }
@@ -413,15 +414,26 @@ int menu2() {
 
 int main() {
     fstream arq;
-    int j, escolha, escolha1;
+    int j, escolha, escolha1, numreg;
+    char nomeArquivo[81];
     do {
         escolha1 = menu1();
-        if(escolha1 == 1) {
-            char nomeArquivo[81];
-            leNomeArquivo(nomeArquivo);
-            arq.open(nomeArquivo,ios::binary| fstream::in | fstream::out | fstream::trunc );
+        if(escolha1 != 0 && escolha1 != 1 && escolha1 != 2) {
+            cout << " Nao existe essa opcao. Tente novamente " << endl;
+        } else if(escolha1 == 1 || escolha1 == 2) {
+            if(escolha1 == 1) {
+                leNomeArquivo(nomeArquivo);
+                arq.open(nomeArquivo,ios::binary| fstream::in | fstream::out);
+                Tamanho(arq, numreg);
+            } else {
+                cout << " Vamos criar o arquivo! " << endl;
+                cout << " Nos informe a quantidade de Registros que deseja: ";
+                cin >> numreg;
+                leNomeArquivo(nomeArquivo);
+                arq.open(nomeArquivo,ios::binary| fstream::in | fstream::out | fstream::trunc);
+                inicializar(arq, numreg);
+            }
             if(arq.is_open()) {
-                inicializar(arq);
                 do {
                     escolha = menu2();
                     if(escolha == 1) { 
@@ -439,24 +451,20 @@ int main() {
                     } else if(escolha == 4) {
                         imprimirSeq(arq);
                     } else if(escolha == 5) {
-                        ImprimeLivres(arq);
+                        ImprimeLivres(arq, numreg);
                     } else if(escolha == 6) {
-                        imprimir(arq);
+                        imprimir(arq, numreg);
                     }
                 } while(escolha != 0);
+            } else {
+                cout << " Ocorreu um problema. Arquivo nao abriu. " << endl;
             }
-        } else if(escolha1 == 2) {
-
-        } else if(escolha1 != 0) {
-            cout << " Nao existe essa opcao. Tente novamente " << endl;
         }
+        arq.close();
     } while(escolha1 != 0);
 
     cout << " ----------OBRIGADO----------" << endl;
-    arq.close();
-
+    
     return 0;
 
 }
-
-
