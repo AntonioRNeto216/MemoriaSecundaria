@@ -257,15 +257,23 @@ int PesquisadoRemove(fstream &arq, int &j) {
         arq.seekg(sizeof(cab)*cab.cabecalho.first,arq.beg);
         arq.read((char*)&cab, sizeof(cab));
         int i = 1;
-        do {
+        if(quant == 1) {
             if(cab.registro.chave == j) {
                 return i;
             } else {
-                arq.seekg(sizeof(cab)*cab.registro.next,arq.beg);
-                arq.read((char*)&cab, sizeof(cab));
-                i++;
+                return 0;
             }
-        } while(i<=quant);
+        } else {
+            do {
+                if(cab.registro.chave == j) {
+                    return i;
+                } else {
+                    arq.seekg(sizeof(cab)*cab.registro.next,arq.beg);
+                    arq.read((char*)&cab, sizeof(cab));
+                    i++;
+                }
+            } while(i<quant);
+        }
     } else {
         return 0;
     }
