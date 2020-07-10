@@ -12,6 +12,7 @@ union dado {
     } registro;
 };
 
+// OK
 void inicializar(fstream &arq) {
     dado d;
     arq.seekp (0,arq.beg);
@@ -30,6 +31,7 @@ void inicializar(fstream &arq) {
     }
 }
 
+// OK
 void imprimir(fstream &arq) {
     dado d;
     arq.seekg (0,arq.beg);
@@ -48,6 +50,7 @@ void imprimir(fstream &arq) {
     }
 }
 
+// OK
 void imprimirSeq(fstream &arq) {
     dado cab,reg;
     arq.seekg (0,arq.beg);
@@ -181,7 +184,7 @@ void insere(fstream &arq, int &j) {
                     cab.cabecalho.last = aux.registro.next;
                     arq.seekp (0,arq.beg);
                     arq.write((char*)&cab, sizeof(cab));
-                } else { // ta no meio 
+                } else { // inserindo no meio 
                     int comp, posicao;
                     do {
                         posicao = aux.registro.prev;
@@ -365,6 +368,7 @@ void Remocao(fstream &arq, int j) {
 
 int menu() {
     int escolha;
+    cout << endl;
     cout << " ----------MENU----------" << endl;
     cout << " 1: Inserir " << endl;
     cout << " 2: Remover " << endl;
@@ -384,11 +388,12 @@ int main() {
     fstream arq;
     int j, escolha;
 
+
     arq.open("pagina.dat",ios::binary| fstream::in | fstream::out );
     if(!arq.is_open()) {
        arq.open("pagina.dat",ios::binary| fstream::in | fstream::out|fstream::trunc );
        if(!arq.is_open()) {
-            cout<<"Erro ao abrir o arquivo!!";
+            cout<<" Erro ao abrir o arquivo!!";
             return 0;
         }
     }
@@ -398,15 +403,15 @@ int main() {
     do {
         escolha = menu();
         if(escolha == 1) { 
-            cout<<"Inserindo novo registro:\nDigite a chave: ";
+            cout<<" Inserindo novo registro: " << endl << " Digite a chave: ";
             cin>>j;
             insere(arq,j);
         } else if(escolha == 2) {
-            cout << "\n Insira a chave para excluir: ";
+            cout << " Insira a chave para excluir: ";
             cin >> j;
             Remocao(arq, j);
         } else if(escolha == 3) {
-            cout << "\n Insira um registro para pesquisa: ";
+            cout << " Insira um registro para pesquisa: ";
             cin >> j;
             Pesquisa(arq, j);
         } else if(escolha == 4) {
