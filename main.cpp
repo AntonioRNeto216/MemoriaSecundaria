@@ -281,7 +281,7 @@ int PesquisadoRemove(fstream &arq, int &j) {
 }
 
 // OK
-void Remocao(fstream &arq, int j) { 
+void Remocao(fstream &arq, int &j) { 
     int quant = PesquisadoRemove(arq, j); // retorna o numero de vezes q ele passou por um registo, porém quant != posicao
     if(quant != 0) { // se retornar 0 sei que o registro com a chave não existe, logo impossivel remover
         dado cab,aux, aux2;
@@ -373,8 +373,27 @@ void Remocao(fstream &arq, int j) {
         cout << " Desculpe, o registro nao existe!" << endl;
     }
 }
+void leNomeArquivo(char nomeArquivo[]) {
+    cout << "Nome do arquivo: ";
+    fflush(stdin);
+    gets(nomeArquivo);
+}
 
-int menu() {
+int menu1() {
+    int escolha;
+    cout << endl;
+    cout << " ----------MENU----------" << endl;
+    cout << " 1: Deseja ler um arquivo " << endl;
+    cout << " 2: Deseja criar um arquivo " << endl;
+    cout << " 0: Sair " << endl;
+    cout << " Escolha: ";
+    cin >> escolha;
+    cout << endl;
+    system("cls");
+    return escolha;
+}
+
+int menu2() {
     int escolha;
     cout << endl;
     cout << " ----------MENU----------" << endl;
@@ -388,52 +407,56 @@ int menu() {
     cout << " Escolha: ";
     cin >> escolha;
     cout << endl;
-    //system("cls");
+    system("cls");
     return escolha;
 }
 
 int main() {
     fstream arq;
-    int j, escolha;
-
-
-    arq.open("pagina.dat",ios::binary| fstream::in | fstream::out );
-    if(!arq.is_open()) {
-       arq.open("pagina.dat",ios::binary| fstream::in | fstream::out|fstream::trunc );
-       if(!arq.is_open()) {
-            cout<<" Erro ao abrir o arquivo!!";
-            return 0;
-        }
-    }
-
-    inicializar(arq);
-
+    int j, escolha, escolha1;
     do {
-        escolha = menu();
-        if(escolha == 1) { 
-            cout<<" Inserindo novo registro: " << endl << " Digite a chave: ";
-            cin>>j;
-            insere(arq,j);
-        } else if(escolha == 2) {
-            cout << " Insira a chave para excluir: ";
-            cin >> j;
-            Remocao(arq, j);
-        } else if(escolha == 3) {
-            cout << " Insira um registro para pesquisa: ";
-            cin >> j;
-            Pesquisa(arq, j);
-        } else if(escolha == 4) {
-            imprimirSeq(arq);
-        } else if(escolha == 5) {
-            ImprimeLivres(arq);
-        } else if(escolha == 6) {
-            imprimir(arq);
+        escolha1 = menu1();
+        if(escolha1 == 1) {
+            char nomeArquivo[81];
+            leNomeArquivo(nomeArquivo);
+            arq.open(nomeArquivo,ios::binary| fstream::in | fstream::out | fstream::trunc );
+            if(arq.is_open()) {
+                inicializar(arq);
+                do {
+                    escolha = menu2();
+                    if(escolha == 1) { 
+                        cout<<" Inserindo novo registro: " << endl << " Digite a chave: ";
+                        cin>>j;
+                        insere(arq,j);
+                    } else if(escolha == 2) {
+                        cout << " Insira a chave para excluir: ";
+                        cin >> j;
+                        Remocao(arq, j);
+                    } else if(escolha == 3) {
+                        cout << " Insira um registro para pesquisa: ";
+                        cin >> j;
+                        Pesquisa(arq, j);
+                    } else if(escolha == 4) {
+                        imprimirSeq(arq);
+                    } else if(escolha == 5) {
+                        ImprimeLivres(arq);
+                    } else if(escolha == 6) {
+                        imprimir(arq);
+                    }
+                } while(escolha != 0);
+            }
+        } else if(escolha1 == 2) {
+
+        } else if(escolha1 != 0) {
+            cout << " Nao existe essa opcao. Tente novamente " << endl;
         }
-    } while(escolha != 0);
-    //system("cls");
+    } while(escolha1 != 0);
+
     cout << " ----------OBRIGADO----------" << endl;
     arq.close();
+
     return 0;
+
 }
 
 
