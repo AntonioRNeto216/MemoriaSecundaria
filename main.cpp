@@ -126,11 +126,11 @@ bool PesquisadoInsere(fstream &arq, int &j) {
     }
 }
 
-void insere(fstream &arq, int &j) { 
-    dado cab, aux, aux2; 
+void insere(fstream &arq, int &j, int &numreg) {
+    dado cab, aux, aux2;
     arq.seekg(0,arq.beg);
     arq.read((char*)&cab, sizeof(cab));
-    if(cab.cabecalho.quant < 8 && PesquisadoInsere(arq, j) == true) { // não deixa inserir quando tem 8, nem uma chave repetida
+    if(cab.cabecalho.quant < numreg && PesquisadoInsere(arq, j) == true) { // não deixa inserir quando tem 8, nem uma chave repetida
         if(cab.cabecalho.quant == 0) { // inserindo quando não tem nada
             arq.seekg(sizeof(aux)*cab.cabecalho.free,arq.beg);
             arq.read((char*)&aux, sizeof(aux));
@@ -149,7 +149,7 @@ void insere(fstream &arq, int &j) {
             arq.read((char*)&aux, sizeof(aux));
             arq.seekg(sizeof(aux2)*cab.cabecalho.free,arq.beg);
             arq.read((char*)&aux2, sizeof(aux2));
-            if(aux.registro.chave > j) { // inserindo no primeiro 
+            if(aux.registro.chave > j) { // inserindo no primeiro
                 arq.seekp (sizeof(aux)*cab.cabecalho.first,arq.beg);
                 aux.registro.prev = cab.cabecalho.free;
                 arq.write((char*)&aux, sizeof(aux));
@@ -179,7 +179,7 @@ void insere(fstream &arq, int &j) {
                     cab.cabecalho.last = aux.registro.next;
                     arq.seekp (0,arq.beg);
                     arq.write((char*)&cab, sizeof(cab));
-                } else { // inserindo no meio 
+                } else { // inserindo no meio
                     int comp, posicao;
                     do {
                         posicao = aux.registro.prev;
@@ -213,7 +213,7 @@ void insere(fstream &arq, int &j) {
     }
 }
 
-void Pesquisa(fstream &arq, int &j) { 
+void Pesquisa(fstream &arq, int &j) {
     dado cab, aux;
     arq.seekg(0,arq.beg);
     arq.read((char*)&cab, sizeof(cab));
@@ -228,20 +228,19 @@ void Pesquisa(fstream &arq, int &j) {
                 break;
             }
         }
-        if(aux.registro.chave == j) {
-            cout << " O registro foi encontrado!!" << endl;
-            cout << " Sua chave: " << cab.registro.chave << endl;
-            cout << " Seu prev: " << cab.registro.prev << endl;
-            cout << " Seu next: " << cab.registro.next << endl;
+        if(aux.registro.chave != j) {
+            cout << "Não possui registros";
         } else {
-            cout << " Desculpe, o registro não foi encontrado" << endl;
+            cout << "\nO registro foi encontrado\n";
+            cout << "Seu prev: " << aux.registro.prev << endl;
+            cout << "Seu next: " << aux.registro.next << endl;
         }
     } else {
-        cout << " Nao possui registros" << endl;
+        cout << "Não possui registros";
     }
 }
 
-int PesquisadoRemove(fstream &arq, int &j) { 
+int PesquisadoRemove(fstream &arq, int &j) {
     dado cab;
     arq.seekg(0,arq.beg);
     arq.read((char*)&cab, sizeof(cab));
@@ -260,20 +259,21 @@ int PesquisadoRemove(fstream &arq, int &j) {
             do {
                 if(cab.registro.chave == j) {
                     return i;
+                } else if(cab.registro.next == -1) {
+                    return 0;
                 } else {
                     arq.seekg(sizeof(cab)*cab.registro.next,arq.beg);
                     arq.read((char*)&cab, sizeof(cab));
                     i++;
                 }
-            } while(i<quant);
+            } while(i<=quant);
         }
     } else {
         return 0;
     }
-    return 0;
 }
 
-void Remocao(fstream &arq, int &j) { 
+void Remocao(fstream &arq, int &j) {
     int quant = PesquisadoRemove(arq, j); // retorna o numero de vezes q ele passou por um registo, porém quant != posicao
     if(quant != 0) { // se retornar 0 sei que o registro com a chave não existe, logo impossivel remover
         dado cab,aux, aux2;
@@ -291,7 +291,7 @@ void Remocao(fstream &arq, int &j) {
             } else {
                 if(cab.cabecalho.quant == 1) {
                     break;
-                } else if (aux.registro.prev != -1) { // caso em que o aux não é o first 
+                } else if (aux.registro.prev != -1) { // caso em que o aux não é o first
                     pos = aux.registro.prev;
                     arq.seekg(sizeof(aux)*pos,arq.beg);
                     arq.read((char*)&aux2, sizeof(aux2));
@@ -436,10 +436,10 @@ int main() {
             if(arq.is_open()) {
                 do {
                     escolha = menu2();
-                    if(escolha == 1) { 
+                    if(escolha == 1) {
                         cout<<" Inserindo novo registro: " << endl << " Digite a chave: ";
                         cin>>j;
-                        insere(arq,j);
+                        insere(arq,j, numreg);
                     } else if(escolha == 2) {
                         cout << " Insira a chave para excluir: ";
                         cin >> j;
@@ -464,7 +464,7 @@ int main() {
     } while(escolha1 != 0);
 
     cout << " ----------OBRIGADO----------" << endl;
-    
+
     return 0;
 
 }
